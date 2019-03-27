@@ -25,6 +25,7 @@ public class ScannerFinder {
         final PcapPacket packet = new PcapPacket(JMemory.POINTER);
         final Tcp tcp = new Tcp();
 
+
         final Map<JFlowKey, JFlow> flows = new HashMap<JFlowKey, JFlow>();
 
         pcap.loop(Pcap.LOOP_INFINITE, new JPacketHandler<StringBuilder>() {
@@ -37,7 +38,9 @@ public class ScannerFinder {
              * final since we do not plan on allocating any other instances of Tcp.
              */
             final Tcp tcp = new Tcp();
-
+            public int bothCt = 0;
+            public int synCt = 0;
+            public int ackCt = 0;
             /*
              * Same thing for our http header
              */
@@ -75,23 +78,37 @@ public class ScannerFinder {
                      */
                     packet.getHeader(tcp);
 
-                    System.out.printf("tcp.dst_port=%d%n", tcp.destination());
-                    System.out.printf("tcp.src_port=%d%n", tcp.source());
-                    System.out.printf("tcp.ack=%x%n", tcp.ack());
+//                    System.out.printf("tcp.dst_port=%d%n", tcp.destination());
+//                    System.out.printf("tcp.src_port=%d%n", tcp.source());
+//                    System.out.printf("tcp.ack=%x%n", tcp.ack());
 
                 }
 
                 if (packet.hasHeader(tcp)) {
-                    System.out.printf("tcp header::%s%n", tcp.toString());
-                    System.out.println("TCP Flags: " + tcp.flags());
+                    //System.out.println("has Stuff");
+                    if (packet.getHeader(tcp).flags_ACK() && packet.getHeader(tcp).flags_SYN() ){
+                        System.out.println("Has     BOTH");
+                        bothCt++;
+                    }
+                    if (packet.getHeader(tcp).flags_SYN()){
+                        System.out.println("has                    SYN");
+                        synCt++;
+                    }
+                    if (packet.getHeader(tcp).flags_ACK()){
+                        System.out.println("has ACK");
+                        ackCt++;
+                    }
+                   //System.out.printf("tcp header::%s%n", tcp.toString());
+                    //System.out.println("TCP Flags: " + tcp.flags());
                 }
 
                 if (packet.hasHeader(tcp) && packet.hasHeader(http)) {
 
-                    System.out.printf("http header::%s%n", http);
+                    //System.out.printf("http header::%s%n", http);
                 }
 
 //                flows.keySet().forEach((k) -> System.out.println(k.getIds()));
+                System.out.println(ackCt+" "+ synCt +" "+ bothCt);
             }
 
         }, errbuf);
@@ -108,33 +125,17 @@ public class ScannerFinder {
 //            flow.add(new PcapPacket(packet));
 //        }
 
-//        for (JFlow flow : flows.values()) {
-//
-//            System.out.printf("Flow %s: ", flow.getKey().toDebugString());
-//            if (flow.isReversable()) {
-//
-//                List<JPacket> forward = flow.getForward();
-//                for (JPacket p : forward) {
-//                    System.out.printf("%d, ", p.getFrameNumber());
-//                }
-//                System.out.println();
-//
-//                List<JPacket> reverse = flow.getReverse();
-//                for (JPacket p : reverse) {
-//                    System.out.printf("%d, ", p.getFrameNumber());
-//                }
-//            } else {
-//                for (JPacket p : flow.getAll()) {
-//                    System.out.printf("%d, ", p.getFrameNumber());
-//                }
-//            }
-//            System.out.println();
-//        }
+        for (JFlow flow : flows.values()) {
+            System.out.println(flow.toString());
+           // flow.getForward().forEach((p) -> System.out.println(p.getHeaderCount()));
+           // System.out.println();
+        }
 //        JFlowMap superFlowMap = new JFlowMap();
 //        pcap.loop(Pcap.LOOP_INFINITE, superFlowMap, null);
 //
 //        System.out.printf("superFlowMap:: %s%n", superFlowMap);
 //
+
 //        pcap.close();
     }
 }
