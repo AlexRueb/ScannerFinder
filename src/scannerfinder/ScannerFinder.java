@@ -72,12 +72,26 @@ public class ScannerFinder {
             }
 
         }, errbuf);
-
+        //initialize file IO
         for (JFlow flow : flows.values()) {
             //System.out.println(flow.getKey().toString());
             int[] tempCounts = counts.get(flow.getKey());
-            if(tempCounts[0] != 0 || tempCounts[2] != 0) {
-                if(tempCounts[0] / tempCounts[2] > 3){
+            //if zero SYNACKS and more than two SYNs
+            //if((tempCounts[2] == 0) && (tempCounts[0] > 2)){
+            //  file add flow.toString();
+            //  file add "--> SYN Count: 
+            //  file add "--> SYNACK Count:
+            //  file add "Port scanning possible."
+            //}
+            //If more than 0 SYN and SYNACKs
+            else if((tempCounts[0] != 0) && (tempCounts[2] != 0)) {
+                //If there is 3x or more SYNs than SYNACKS
+                if((tempCounts[0] / tempCounts[2]) >= 3){
+                //  file add flow.toString();
+                //  file add "--> SYN Count: 
+                //  file add "--> SYNACK Count:
+                //  file add "Port scanning possible."
+                //}
                     System.out.println("------------");
                     System.out.println(flow.toString());
                     System.out.println("------------");
