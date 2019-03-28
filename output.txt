@@ -1,0 +1,4 @@
+128.3.23.5:54558 -> 196.119.124.204:80 Tcp fw/rev/tot pkts=[5/0/5]
+--> SYN Count: 5
+--> SYNACK Count: 0
+Port Scanning Possible

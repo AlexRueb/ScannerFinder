@@ -10,6 +10,7 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class ScannerFinder {
         // int[0] is SYN only, int[1] is ACK only, and int[2] is SYNACK
         final Map<JFlowKey, int[]> counts = new HashMap<JFlowKey, int[]>();
 
-        pcap.loop(150000, new JPacketHandler<StringBuilder>() {
+        pcap.loop(500000, new JPacketHandler<StringBuilder>() {
             final Tcp tcp = new Tcp();
             final Http http = new Http();
             public void nextPacket(JPacket packet, StringBuilder errbuf) {
@@ -71,13 +72,13 @@ public class ScannerFinder {
                     }
                 }
                 if(counts.get(key)[2] != counts.get(key)[0]) {
-                    System.out.println(counts.get(key)[2] + "   " + counts.get(key)[0]);
+                    //System.out.println(counts.get(key)[2] + "   " + counts.get(key)[0]);
                 }
             }
 
         }, errbuf);
 
-        StringArray outputData = new StringArray();
+        ArrayList<String> outputData = new ArrayList<>();
         for (JFlow flow : flows.values()) {
             //System.out.println(flow.getKey().toString());
             int[] tempCounts = counts.get(flow.getKey());
@@ -115,17 +116,19 @@ public class ScannerFinder {
 //                    System.out.println("------------");
 
             }
-            //initialize file IO
-            FileWriter fw;
-            try{
-                fw = new FileWriter("output.txt");
-                for(int i = 0; i < outputData.getSize(); i++) {
-                    fw.write(outputData.get(i));
-                }
-
-            } catch(IOException e){
-                System.out.println("error writing file");
+        }
+        //initialize file IO
+        FileWriter fw;
+        try{
+            fw = new FileWriter("output.txt");
+            for(int i = 0; i < outputData.size(); i++) {
+                fw.write(outputData.get(i));
             }
+            fw.close();
+            System.out.println("Finished");
+
+        } catch(IOException e){
+            System.out.println("error writing file");
         }
     }
 }
