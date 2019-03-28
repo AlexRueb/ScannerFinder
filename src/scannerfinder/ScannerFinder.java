@@ -1,11 +1,15 @@
 package scannerfinder;
 
+import com.sun.xml.internal.fastinfoset.util.StringArray;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.nio.JMemory;
 import org.jnetpcap.packet.*;
 import org.jnetpcap.protocol.tcpip.Http;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,34 +76,55 @@ public class ScannerFinder {
             }
 
         }, errbuf);
-        //initialize file IO
+
+        StringArray outputData = new StringArray();
         for (JFlow flow : flows.values()) {
             //System.out.println(flow.getKey().toString());
             int[] tempCounts = counts.get(flow.getKey());
             //if zero SYNACKS and more than two SYNs
-            //if((tempCounts[2] == 0) && (tempCounts[0] > 2)){
+            if((tempCounts[2] == 0) && (tempCounts[0] > 2)){
+
             //  file add flow.toString();
-            //  file add "--> SYN Count: 
+            outputData.add(flow.toString()+'\n');
+            //  file add "--> SYN Count:
+            outputData.add("--> SYN Count: "+tempCounts[0]+'\n');
             //  file add "--> SYNACK Count:
+            outputData.add("--> SYNACK Count: "+tempCounts[2]+'\n');
             //  file add "Port scanning possible."
-            //}
+            outputData.add("Port Scanning Possible"+'\n');
+            }
             //If more than 0 SYN and SYNACKs
             else if((tempCounts[0] != 0) && (tempCounts[2] != 0)) {
                 //If there is 3x or more SYNs than SYNACKS
                 if((tempCounts[0] / tempCounts[2]) >= 3){
-                //  file add flow.toString();
-                //  file add "--> SYN Count: 
-                //  file add "--> SYNACK Count:
-                //  file add "Port scanning possible."
-                //}
-                    System.out.println("------------");
-                    System.out.println(flow.toString());
-                    System.out.println("------------");
-                    System.out.println("SYN: " + tempCounts[0]);
-                    //System.out.println("ACK: " + tempCounts[1]);
-                    System.out.println("SYNACK: " + tempCounts[2]);
-                    System.out.println("------------");
+                    //  file add flow.toString();
+                    outputData.add(flow.toString()+'\n');
+                    //  file add "--> SYN Count:
+                    outputData.add("--> SYN Count: "+tempCounts[0]+'\n');
+                    //  file add "--> SYNACK Count:
+                    outputData.add("--> SYNACK Count: "+tempCounts[2]+'\n');
+                    //  file add "Port scanning possible."
+                    outputData.add("Port Scanning Possible"+'\n');
                 }
+//                    System.out.println("------------");
+//                    System.out.println(flow.toString());
+//                    System.out.println("------------");
+//                    System.out.println("SYN: " + tempCounts[0]);
+//                    System.out.println("ACK: " + tempCounts[1]);
+//                    System.out.println("SYNACK: " + tempCounts[2]);
+//                    System.out.println("------------");
+
+            }
+            //initialize file IO
+            FileWriter fw;
+            try{
+                fw = new FileWriter("output.txt");
+                for(int i = 0; i < outputData.getSize(); i++) {
+                    fw.write(outputData.get(i));
+                }
+
+            } catch(IOException e){
+                System.out.println("error writing file");
             }
         }
     }
