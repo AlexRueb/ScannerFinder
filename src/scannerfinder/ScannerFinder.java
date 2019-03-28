@@ -7,6 +7,7 @@ import org.jnetpcap.packet.*;
 import org.jnetpcap.protocol.tcpip.Http;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -77,34 +78,34 @@ public class ScannerFinder {
 
         }, errbuf);
 
-        FileWriter fw = new FileWriter("output.txt");
 
         for (JFlow flow : flows.values()) {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("output.txt", true));
             //System.out.println(flow.getKey().toString());
             int[] tempCounts = counts.get(flow.getKey());
             //if zero SYNACKS and more than two SYNs
             if((tempCounts[2] == 0) && (tempCounts[0] > 2)){
                 //  file add flow.toString();
-                fw.write(flow.toString()+'\n');
+                bw.write(flow.toString()+'\n');
                 //  file add "--> SYN Count:
-                fw.write("--> SYN Count: "+tempCounts[0]+'\n');
+                bw.write("--> SYN Count: "+tempCounts[0]+'\n');
                 //  file add "--> SYNACK Count:
-                fw.write("--> SYNACK Count: "+tempCounts[2]+'\n');
+                bw.write("--> SYNACK Count: "+tempCounts[2]+'\n');
                 //  file add "Port scanning possible."
-                fw.write("Port Scanning Possible"+'\n');
+                bw.write("Port Scanning Possible"+'\n');
             }
             //If more than 0 SYN and SYNACKs
             else if((tempCounts[0] != 0) && (tempCounts[2] != 0)) {
                 //If there is 3x or more SYNs than SYNACKS
                 if((tempCounts[0] / tempCounts[2]) >= 3){
                     //  file add flow.toString();
-                    fw.write(flow.toString()+'\n');
+                    bw.write(flow.toString()+'\n');
                     //  file add "--> SYN Count:
-                    fw.write("--> SYN Count: "+tempCounts[0]+'\n');
+                    bw.write("--> SYN Count: "+tempCounts[0]+'\n');
                     //  file add "--> SYNACK Count:
-                    fw.write("--> SYNACK Count: "+tempCounts[2]+'\n');
+                    bw.write("--> SYNACK Count: "+tempCounts[2]+'\n');
                     //  file add "Port scanning possible."
-                    fw.write("Port Scanning Possible"+'\n');
+                    bw.write("Port Scanning Possible"+'\n');
                 }
 //                    System.out.println("------------");
 //                    System.out.println(flow.toString());
@@ -115,7 +116,7 @@ public class ScannerFinder {
 //                    System.out.println("------------");
 
             }
+            bw.close();
         }
-        fw.close();
     }
 }
