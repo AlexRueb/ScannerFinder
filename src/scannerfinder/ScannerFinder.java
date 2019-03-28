@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class ScannerFinder {
     public static void main(String[] args) throws IOException {
-        final String FILENAME = "input/input.pcap";
+        final String FILENAME = args[0];
         final StringBuilder errbuf = new StringBuilder();
         final Pcap pcap = Pcap.openOffline(FILENAME, errbuf);
 
