@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ScannerFinder {
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         final String FILENAME = "input/input.pcap";
         final StringBuilder errbuf = new StringBuilder();
         final Pcap pcap = Pcap.openOffline(FILENAME, errbuf);
@@ -33,7 +33,6 @@ public class ScannerFinder {
 
         // int[0] is SYN only, int[1] is ACK only, and int[2] is SYNACK
         final Map<JFlowKey, int[]> counts = new HashMap<JFlowKey, int[]>();
-
         pcap.loop(500000, new JPacketHandler<StringBuilder>() {
             final Tcp tcp = new Tcp();
             final Http http = new Http();
@@ -78,34 +77,34 @@ public class ScannerFinder {
 
         }, errbuf);
 
-        ArrayList<String> outputData = new ArrayList<>();
+        FileWriter fw = new FileWriter("output.txt");
+
         for (JFlow flow : flows.values()) {
             //System.out.println(flow.getKey().toString());
             int[] tempCounts = counts.get(flow.getKey());
             //if zero SYNACKS and more than two SYNs
             if((tempCounts[2] == 0) && (tempCounts[0] > 2)){
-
-            //  file add flow.toString();
-            outputData.add(flow.toString()+'\n');
-            //  file add "--> SYN Count:
-            outputData.add("--> SYN Count: "+tempCounts[0]+'\n');
-            //  file add "--> SYNACK Count:
-            outputData.add("--> SYNACK Count: "+tempCounts[2]+'\n');
-            //  file add "Port scanning possible."
-            outputData.add("Port Scanning Possible"+'\n');
+                //  file add flow.toString();
+                fw.write(flow.toString()+'\n');
+                //  file add "--> SYN Count:
+                fw.write("--> SYN Count: "+tempCounts[0]+'\n');
+                //  file add "--> SYNACK Count:
+                fw.write("--> SYNACK Count: "+tempCounts[2]+'\n');
+                //  file add "Port scanning possible."
+                fw.write("Port Scanning Possible"+'\n');
             }
             //If more than 0 SYN and SYNACKs
             else if((tempCounts[0] != 0) && (tempCounts[2] != 0)) {
                 //If there is 3x or more SYNs than SYNACKS
                 if((tempCounts[0] / tempCounts[2]) >= 3){
                     //  file add flow.toString();
-                    outputData.add(flow.toString()+'\n');
+                    fw.write(flow.toString()+'\n');
                     //  file add "--> SYN Count:
-                    outputData.add("--> SYN Count: "+tempCounts[0]+'\n');
+                    fw.write("--> SYN Count: "+tempCounts[0]+'\n');
                     //  file add "--> SYNACK Count:
-                    outputData.add("--> SYNACK Count: "+tempCounts[2]+'\n');
+                    fw.write("--> SYNACK Count: "+tempCounts[2]+'\n');
                     //  file add "Port scanning possible."
-                    outputData.add("Port Scanning Possible"+'\n');
+                    fw.write("Port Scanning Possible"+'\n');
                 }
 //                    System.out.println("------------");
 //                    System.out.println(flow.toString());
@@ -117,18 +116,6 @@ public class ScannerFinder {
 
             }
         }
-        //initialize file IO
-        FileWriter fw;
-        try{
-            fw = new FileWriter("output.txt");
-            for(int i = 0; i < outputData.size(); i++) {
-                fw.write(outputData.get(i));
-            }
-            fw.close();
-            System.out.println("Finished");
-
-        } catch(IOException e){
-            System.out.println("error writing file");
-        }
+        fw.close();
     }
 }
